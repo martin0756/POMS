@@ -99,6 +99,7 @@ urlpatterns = (
                 name="schema-redoc",
             ),
             path("api/system/", include("dvadmin.system.urls")),
+            # 登录接口，url路径为api/login/，触发视图函数LoginView.as_view()
             path("api/login/", LoginView.as_view(), name="token_obtain_pair"),
             path("api/logout/", LogoutView.as_view(), name="token_obtain_pair"),
             path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),

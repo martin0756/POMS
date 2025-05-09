@@ -50,33 +50,46 @@ class CaptchaView(APIView):
         return DetailResponse(data=data)
 
 
+# 定义了一个名为 LoginSerializer 的序列化器类，它继承自 TokenObtainPairSerializer，用于处理用户登录时的数据验证和处理。
 class LoginSerializer(TokenObtainPairSerializer):
-    """
-    登录的序列化器:
-    重写djangorestframework-simplejwt的序列化器
-    """
+    # 定义了一个名为 captcha 的字段，用于接收用户输入的验证码。
     captcha = serializers.CharField(
+        # 该字段是字符串类型，最大长度为 6，不是必需字段，允许为空值和空字符串。
         max_length=6, required=False, allow_null=True, allow_blank=True
     )
 
     class Meta:
+        # 指定该序列化器对应的模型为 Users 模型，表明该序列化器用于处理 Users 模型的数据。
         model = Users
+        # 表示序列化器将包含 Users 模型的所有字段。
         fields = "__all__"
+        # 指定 id 字段为只读字段，即该字段在序列化过程中会被包含，但在反序列化（如创建或更新数据）时不会被使用。
         read_only_fields = ["id"]
 
+    # 定义了默认的错误消息，当出现 no_active_account 错误时，会显示 “账号 / 密码错误”。
     default_error_messages = {"no_active_account": _("账号/密码错误")}
 
+    # validate 方法是序列化器中用于验证数据的核心方法，attrs 是包含用户输入数据的字典。
     def validate(self, attrs):
+        # 从 initial_data 中获取用户输入的验证码 captcha。
         captcha = self.initial_data.get("captcha", None)
+        # 检查系统配置中是否开启了验证码功能。
         if dispatch.get_system_config_values("base.captcha_state"):
+            # 如果开启了验证码功能且用户未输入验证码
             if captcha is None:
+                # 抛出 CustomValidationError 异常，提示 “验证码不能为空”。
                 raise CustomValidationError("验证码不能为空")
+            # 根据用户输入的 captchaKey 从 CaptchaStore 中获取对应的验证码记录。
             self.image_code = CaptchaStore.objects.filter(
                 id=self.initial_data["captchaKey"]
             ).first()
+            # 计算 5 分钟前的时间。
             five_minute_ago = datetime.now() - timedelta(hours=0, minutes=5, seconds=0)
+            # 检查验证码是否过期。
             if self.image_code and five_minute_ago > self.image_code.expiration:
+                # 如果过期，删除该验证码记录。
                 self.image_code and self.image_code.delete()
+                # 抛出异常提示 “验证码过期”。
                 raise CustomValidationError("验证码过期")
             else:
                 if self.image_code and (
