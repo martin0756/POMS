@@ -63,17 +63,29 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+# 中间件是在请求到达视图函数之前和响应返回给客户端之前执行的一系列处理程序，可用于全局处理请求和响应。
     "dvadmin.utils.middleware.HealthCheckMiddleware",
+    # 此中间件用于存活检查
     "django.middleware.security.SecurityMiddleware",
+    # 此中间件用于一些基本的安全功能
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    # 此中间件用于处理静态文件的服务
     "django.contrib.sessions.middleware.SessionMiddleware",
+    # 此中间件用于处理会话
     "corsheaders.middleware.CorsMiddleware",  # 跨域中间件
+    # 此中间件用于解决跨域资源共享（CORS）问题
     "django.middleware.common.CommonMiddleware",
+    # 此中间件用于一些常见的功能
     "django.middleware.csrf.CsrfViewMiddleware",
+    # 此中间件用于防范跨站请求伪造（CSRF）攻击。
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    # 此中间件用于处理用户的身份验证
     "django.contrib.messages.middleware.MessageMiddleware",
+    # 该中间件用于处理一次性消息（messages）。
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # 此中间件用于防范点击劫持（clickjacking）攻击
     "dvadmin.utils.middleware.ApiLoggingMiddleware",
+    # 此中间件用于记录 API 访问日志。
 ]
 
 ROOT_URLCONF = "application.urls"
