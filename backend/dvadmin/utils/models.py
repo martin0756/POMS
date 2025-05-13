@@ -1,39 +1,47 @@
-# -*- coding: utf-8 -*-
-
-"""
-@author: 猿小天
-@contact: QQ:1638245306
-@Created on: 2021/5/31 031 22:08
-@Remark: 公共基础model类
-"""
 from datetime import datetime
+# datetime 类用于处理日期和时间，它可以表示一个具体的日期和时间点，支持日期和时间的计算、格式化输出等操作。
 from importlib import import_module
+# import_module 函数允许你在运行时动态地导入模块。通过指定模块的名称字符串，它可以返回对应的模块对象，方便在程序中动态加载不同的模块。
 
 from application import settings
+# settings 对象包含了项目的各种配置信息，如数据库连接信息、静态文件路径、中间件配置等。
 from django.apps import apps
+# apps 对象是 Django 应用注册表的接口，它允许你在运行时访问和操作 Django 项目中的所有应用及其模型。
 from django.conf import settings
+# django.conf.settings 是全局的配置对象，所有的配置项都可以通过它来访问。
 from django.db import models
+# 通过继承 models.Model 类，你可以定义自己的数据库表结构，并使用 Django 提供的 ORM（对象关系映射）功能来操作数据库。
 from rest_framework.request import Request
+# Request 类是 Django REST framework 对 Django 原生 HttpRequest 对象的扩展，它提供了更多的功能和方法，方便在 RESTful API 开发中处理请求数据。
 
-table_prefix = settings.TABLE_PREFIX  # 数据库表名前缀
+table_prefix = settings.TABLE_PREFIX
+#  从项目的设置中获取数据库表名前缀，并赋值给变量 table_prefix
 
 
 class SoftDeleteQuerySet(models.QuerySet):
+# 定义一个名为 SoftDeleteQuerySet 的类，它继承自 Django 的 QuerySet 类
     pass
 
 
 class SoftDeleteManager(models.Manager):
-    """支持软删除"""
+# 软删除管理器
 
     def __init__(self, *args, **kwargs):
+    # 类的构造函数，在创建类的实例时自动调用
         self.__add_is_del_filter = False
+        # 初始化一个私有属性 __add_is_del_filter，用于标记是否主动传入了 is_deleted 参数，初始值为 False
         super(SoftDeleteManager, self).__init__(*args, **kwargs)
+        # 调用父类 models.Manager 的构造函数，传入相同的参数
 
     def filter(self, *args, **kwargs):
+    # 重写 filter 方法，用于过滤查询集
         # 考虑是否主动传入is_deleted
         if not kwargs.get('is_deleted') is None:
+        # 检查 kwargs 字典中是否包含 'is_deleted' 键
             self.__add_is_del_filter = True
+            # 如果包含则将 __add_is_del_filter 设置为 True
         return super(SoftDeleteManager, self).filter(*args, **kwargs)
+        # 调用父类的 filter 方法，传入相同的参数，并返回过滤后的查询集
 
     def get_queryset(self):
         if self.__add_is_del_filter:
